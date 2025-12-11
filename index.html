@@ -3,220 +3,309 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>名字 → 預測另一半年紀</title>
+  <title>MOBA 風格英雄大廳 — 範例</title>
   <style>
-    /* 簡潔美觀的樣式 */
+    /* 風格說明：現代、暗色系、玻璃質感卡片、微動效 */
     :root{
-      --bg:#f6f8fb;
-      --card:#ffffff;
-      --accent:#556bff;
-      --muted:#6b7280;
-      --shadow: 0 8px 24px rgba(34,41,84,0.06);
-      font-family: system-ui, "Noto Sans TC", "Helvetica Neue", Arial;
+      --bg1:#0b1020;
+      --bg2:#0f1724;
+      --card:rgba(255,255,255,0.04);
+      --glass:rgba(255,255,255,0.06);
+      --accent:#8b5cf6;
+      --accent-2:#06b6d4;
+      --muted:rgba(255,255,255,0.6);
+      --glass-border:rgba(255,255,255,0.06);
+      font-family: Inter, "Noto Sans TC", system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     }
-    html,body{height:100%; margin:0; background:linear-gradient(180deg,var(--bg),#eef2ff);}
-    .wrap{
-      min-height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:40px 16px;
-      box-sizing:border-box;
+    html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 10% 10%, rgba(139,92,246,0.12), transparent), linear-gradient(180deg,var(--bg1),var(--bg2));color:#fff}
+
+    /* page layout */
+    .wrap{min-height:100%;display:flex;flex-direction:column}
+    header{display:flex;align-items:center;gap:18px;padding:20px 28px;border-bottom:1px solid rgba(255,255,255,0.03);backdrop-filter: blur(6px)}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo .emblem{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(11,12,26,0.6)}
+    .logo h1{font-size:18px;margin:0}
+    .header-actions{margin-left:auto;display:flex;gap:12px;align-items:center}
+
+    /* main area */
+    .main{display:flex;gap:24px;padding:28px;width:100%;box-sizing:border-box}
+    .left{flex:1;min-width:320px}
+    .right{width:420px}
+
+    /* lobby card */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:18px;border:1px solid var(--glass-border);box-shadow:0 10px 30px rgba(2,6,23,0.6)}
+    .title{display:flex;align-items:center;gap:10px}
+    .subtitle{color:var(--muted);font-size:13px}
+
+    /* hero grid */
+    .hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:14px}
+    .hero{position:relative;border-radius:12px;overflow:hidden;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:transform .25s ease, box-shadow .25s ease}
+    .hero:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,23,0.6)}
+    .hero .svgwrap{width:100%;height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+    .hero h3{margin:0;font-size:15px}
+    .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
+    .hero .tags{display:flex;gap:8px;margin-top:10px}
+    .tag{font-size:12px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
+
+    /* selected hero preview */
+    .preview{display:flex;gap:14px;align-items:center}
+    .preview .art{width:160px;height:160px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 20px 40px rgba(11,92,246,0.12)}
+    .preview .info h2{margin:0 0 6px}
+    .preview .info p{margin:0;color:var(--muted)}
+    .btn{padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));font-weight:700;cursor:pointer}
+
+    /* party list on right */
+    .party-list{display:flex;flex-direction:column;gap:10px}
+    .player{display:flex;gap:12px;align-items:center;padding:8px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
+    .player .avatar{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#334155,#0ea5a4);display:flex;align-items:center;justify-content:center;font-weight:700}
+    .muted{color:var(--muted)}
+
+    /* small interactions */
+    .glow{position:relative}
+    .glow::after{content:'';position:absolute;inset:0;border-radius:inherit;box-shadow:0 0 40px rgba(139,92,246,0.08);opacity:0;transition:opacity .25s}
+    .hero:hover .glow::after{opacity:1}
+
+    /* responsive */
+    @media (max-width:900px){
+      .main{flex-direction:column}
+      .right{width:100%}
+      .preview .art{width:120px;height:120px}
     }
-    .card{
-      background:var(--card);
-      padding:28px;
-      border-radius:14px;
-      width:100%;
-      max-width:560px;
-      box-shadow:var(--shadow);
-    }
-    h1{margin:0 0 8px; font-size:20px;}
-    p.lead{margin:0 0 18px; color:var(--muted); font-size:14px;}
-    .row{display:flex; gap:10px; margin-bottom:12px;}
-    input[type="text"]{
-      flex:1;
-      padding:12px 14px;
-      border-radius:10px;
-      border:1px solid #e6e9f2;
-      font-size:15px;
-      outline:none;
-    }
-    button{
-      padding:12px 16px;
-      border-radius:10px;
-      border:0;
-      background:var(--accent);
-      color:white;
-      font-weight:600;
-      cursor:pointer;
-      font-size:15px;
-    }
-    .result{
-      margin-top:18px;
-      padding:14px;
-      border-radius:10px;
-      background:linear-gradient(180deg,#fbfdff,#f6f9ff);
-      border:1px solid #eef2ff;
-      font-size:16px;
-    }
-    .meta{margin-top:12px; color:var(--muted); font-size:13px;}
-    footer{margin-top:14px; font-size:13px; color:var(--muted);}
-    .small{font-size:13px; color:#9aa0b4;}
-    .controls{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
-    label{font-size:13px; color:var(--muted);}
-    input[type="range"]{width:160px;}
-    .hint{margin-top:8px;color:#8b92a8;font-size:13px;}
+
+    /* subtle entrance */
+    .fade-in{animation:fadeIn .6s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card" role="main">
-      <h1>名字 → 預測另一半年紀</h1>
-      <p class="lead">輸入名字（或暱稱），按下預測會得到一個穩定的年齡結果。可調整年齡上下限。</p>
-
-      <div class="row">
-        <input id="nameInput" type="text" placeholder="輸入名字，例如：小明 / Lily / 張三" autocomplete="off" />
-        <button id="predictBtn">預測</button>
+    <header>
+      <div class="logo">
+        <div class="emblem" aria-hidden>
+          <!-- simple SVG emblem -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z" fill="white" opacity="0.95" />
+          </svg>
+        </div>
+        <div>
+          <h1>傳說樣式大廳（範例）</h1>
+          <div class="subtitle">英雄選擇與隊伍預覽 — 前端範例</div>
+        </div>
       </div>
-
-      <div class="controls">
-        <label for="minRange">最小年齡</label>
-        <input id="minRange" type="range" min="12" max="30" value="18" />
-        <span id="minVal" class="small">18</span>
-        <div style="flex:1"></div>
-        <label for="maxRange">最大年齡</label>
-        <input id="maxRange" type="range" min="30" max="90" value="65" />
-        <span id="maxVal" class="small">65</span>
+      <div class="header-actions">
+        <div class="muted">遊戲室：#無名大廳</div>
+        <button class="btn" id="btnReady">準備</button>
       </div>
+    </header>
 
-      <div class="hint">提示：拖動滑桿可以改變年齡範圍（預設為 18–65）。</div>
+    <main class="main">
+      <section class="left">
+        <div class="card fade-in">
+          <div class="title">
+            <div>
+              <h2 style="margin:0">英雄選單</h2>
+              <div class="subtitle">點擊卡片查看並選擇英雄</div>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+              <input id="search" placeholder="搜尋英雄" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit" />
+            </div>
+          </div>
 
-      <div id="result" class="result" aria-live="polite" style="display:none"></div>
+          <div class="hero-grid" id="heroGrid" aria-live="polite">
+            <!-- heroes generated by JS -->
+          </div>
+        </div>
 
-      <div class="meta">
-        <div>演算法：把名字轉成數字雜湊（可重複），再映射到你設定的年齡範圍內。</div>
-        <div class="small">若想產生更浪漫或幽默的描述，我也可以幫你加上「個性」「約會建議」等額外文字！</div>
-      </div>
+        <div style="height:18px"></div>
 
-      <footer>
-        <div class="small">版本 1 — 完全在瀏覽器執行，不會上傳任何資料。</div>
-      </footer>
-    </div>
+        <div class="card fade-in">
+          <div class="title"><h2 style="margin:0">已選擇</h2><div class="subtitle" style="margin-left:8px">你的暫存英雄</div></div>
+          <div id="selectedContainer" style="margin-top:12px">
+            <div class="preview" id="emptyPreview">
+              <div class="art" style="background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));">?</div>
+              <div class="info"><h2 class="muted">尚未選擇英雄</h2><p class="muted">請從上方選擇一位英雄以檢視詳細資料</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="right">
+        <div class="card fade-in">
+          <h3 style="margin:0">隊伍</h3>
+          <div class="subtitle" style="margin-top:6px">隊伍人數：<span id="teamCount">1</span>/5</div>
+
+          <div class="party-list" id="partyList" style="margin-top:12px">
+            <div class="player">
+              <div class="avatar">你</div>
+              <div style="flex:1">
+                <div style="font-weight:700">玩家_001</div>
+                <div class="muted">位置：中路</div>
+              </div>
+              <div class="muted">準備</div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+          <button class="btn" id="btnInvite">邀請好友</button>
+        </div>
+
+        <div style="height:14px"></div>
+
+        <div class="card fade-in">
+          <h3 style="margin:0">英雄詳情</h3>
+          <div class="subtitle">點擊任一英雄卡檢視技能與屬性</div>
+          <div id="heroDetail" style="margin-top:12px">
+            <div class="muted">尚未選擇英雄</div>
+          </div>
+        </div>
+      </aside>
+    </main>
   </div>
 
   <script>
-    // ----- 設定 -----
-    const nameInput = document.getElementById('nameInput');
-    const predictBtn = document.getElementById('predictBtn');
-    const resultEl = document.getElementById('result');
-    const minRange = document.getElementById('minRange');
-    const maxRange = document.getElementById('maxRange');
-    const minVal = document.getElementById('minVal');
-    const maxVal = document.getElementById('maxVal');
+    // 範例英雄資料（純示範用，請替換成你的資料與圖片）
+    const HEROES = [
+      {id:1,name:'赤焰獵手', role:'射手', tag:['遠程','爆發'], desc:'擅長單體輸出與追擊。'},
+      {id:2,name:'寒影刺客', role:'刺客', tag:['機動','瞬殺'], desc:'能迅速切入敵陣，秒殺脆皮。'},
+      {id:3,name:'守護聖騎', role:'坦克', tag:['保護','控制'], desc:'擁有強力嘲諷與生存能力。'},
+      {id:4,name:'星靈法師', role:'法師', tag:['範圍','爆發'], desc:'操控星辰能量造成群體傷害。'},
+      {id:5,name:'綠野弓手', role:'射手', tag:['持續輸出','支援'], desc:'利用地形與陷阱控制戰場。'},
+      {id:6,name:'浪潮領主', role:'戰士', tag:['近戰','持久'], desc:'擅長正面對決與回復。'},
+      {id:7,name:'暮光術士', role:'法師', tag:['削弱','控場'], desc:'破壞敵人節奏並回收法力。'},
+      {id:8,name:'焚林薩滿', role:'輔助', tag:['治療','增益'], desc:'維持隊友戰鬥續航與團隊增益。'}
+    ];
 
-    // 更新顯示的滑桿數值
-    function updateRangeDisplays(){
-      minVal.textContent = minRange.value;
-      maxVal.textContent = maxRange.value;
-      // 確保 min <= max
-      if (parseInt(minRange.value) >= parseInt(maxRange.value)) {
-        // 若衝突，自動維持最小差距 1
-        maxRange.value = Math.min(parseInt(minRange.value) + 1, maxRange.max);
-        maxVal.textContent = maxRange.value;
-      }
-    }
-    minRange.addEventListener('input', updateRangeDisplays);
-    maxRange.addEventListener('input', updateRangeDisplays);
-    updateRangeDisplays();
+    const heroGrid = document.getElementById('heroGrid');
+    const heroDetail = document.getElementById('heroDetail');
+    const selectedContainer = document.getElementById('selectedContainer');
+    const teamCountEl = document.getElementById('teamCount');
+    const searchInput = document.getElementById('search');
 
-    // ----- 核心：把名字 deterministic 轉成年齡 -----
-    // 演算法說明（簡短）：
-    // 1. 以名字每個字元的 charCode 計算一個整數雜湊值（考慮字符位置加權）。
-    // 2. 將雜湊值轉為非負，取模以映射到目標年齡範圍（min..max）。
-    function hashNameToNumber(name) {
-      // 簡單且穩定的雜湊：基於 DJB2 的變體
-      // 保留 unicode 字元處理（適用中文和英文）
-      let h = 5381;
-      for (let i = 0; i < name.length; i++) {
-        // 使用 charCodeAt 處理單一 UTF-16 code unit（對絕大多數名字足夠）
-        h = ((h << 5) + h) ^ name.charCodeAt(i); // h * 33 ^ c
-        // 限制在 32-bit 範圍，避免溢位問題
-        h = h | 0;
-      }
-      return Math.abs(h);
-    }
+    let selectedHero = null;
+    let team = [{name:'玩家_001', ready:true}];
 
-    function predictAgeFromName(name, minAge = 18, maxAge = 65) {
-      name = (name || '').trim();
-      if (!name) return null;
-      const num = hashNameToNumber(name);
-      const range = Math.max(1, parseInt(maxAge) - parseInt(minAge) + 1);
-      const age = (num % range) + parseInt(minAge);
-      return age;
+    function renderHeroes(list){
+      heroGrid.innerHTML = '';
+      list.forEach(h => {
+        const el = document.createElement('div');
+        el.className = 'hero glow';
+        el.tabIndex = 0;
+        el.dataset.id = h.id;
+        el.innerHTML = `
+          <div class="svgwrap">${generateHeroSVG(h)}</div>
+          <h3>${h.name}</h3>
+          <p>${h.role}</p>
+          <div class="tags">${h.tag.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+        `;
+        el.addEventListener('click', () => onSelectHero(h));
+        el.addEventListener('keydown', (e) => { if(e.key==='Enter') onSelectHero(h); });
+        heroGrid.appendChild(el);
+      });
     }
 
-    // ----- UI 行為 -----
-    function showResult(text, extraClass='') {
-      resultEl.style.display = 'block';
-      resultEl.innerHTML = text;
-      if (extraClass) {
-        resultEl.className = 'result ' + extraClass;
-      } else {
-        resultEl.className = 'result';
-      }
+    function generateHeroSVG(h){
+      // 純占位的抽象 SVG 圖示（避免版權問題）
+      const seed = (h.id * 137) % 255;
+      return `<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="g${h.id}" x1="0" x2="1"><stop offset="0" stop-color="rgba(255,255,255,0.12)"/><stop offset="1" stop-color="rgba(255,255,255,0.02)"/></linearGradient>
+        </defs>
+        <rect x="6" y="6" width="108" height="68" rx="10" fill="url(#g${h.id})" stroke="rgba(255,255,255,0.02)"/>
+        <circle cx="36" cy="40" r="22" fill="hsl(${seed} 70% 55%)" opacity="0.95" />
+        <path d="M60 20 Q80 40 60 60" stroke="white" stroke-opacity="0.12" stroke-width="8" fill="none" stroke-linecap="round"/>
+      </svg>`;
     }
 
-    predictBtn.addEventListener('click', () => {
-      const name = nameInput.value;
-      const min = parseInt(minRange.value);
-      const max = parseInt(maxRange.value);
-      if (!name.trim()) {
-        showResult('請先輸入名字喔！', 'warn');
-        nameInput.focus();
+    function onSelectHero(h){
+      selectedHero = h;
+      renderSelected();
+      renderHeroDetail(h);
+    }
+
+    function renderSelected(){
+      selectedContainer.innerHTML = '';
+      if(!selectedHero) {
+        selectedContainer.innerHTML = document.getElementById('emptyPreview').outerHTML;
         return;
       }
-      const age = predictAgeFromName(name, min, max);
-      // 可以用一些額外文字讓結果更有趣
-      const adjectives = [
-        '溫柔又可靠',
-        '有點神祕但超吸引人',
-        '幽默風趣、笑點很高',
-        '成熟穩重，像個大樹',
-        '活潑外向，愛玩愛笑',
-        '細心體貼，適合一起生活'
-      ];
-      const pick = adjectives[ Math.abs(hashNameToNumber(name + 'adj')) % adjectives.length ];
-      const html = `
-        <strong>預測年齡：</strong> ${age} 歲<br/>
-        <span class="small">（名字：<em>${escapeHtml(name)}</em>；範圍：${min}–${max}）</span>
-        <div style="margin-top:8px;">小提醒：我們覺得對方個性可能是 — <strong>${pick}</strong></div>
+      const wrap = document.createElement('div');
+      wrap.className = 'preview';
+      wrap.innerHTML = `
+        <div class="art">${generateHeroSVG(selectedHero)}</div>
+        <div class="info">
+          <h2>${selectedHero.name}</h2>
+          <p class="muted">${selectedHero.role} • ${selectedHero.tag.join(' / ')}</p>
+          <div style="height:8px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" id="btnPick">選擇</button>
+            <button class="btn" id="btnPreview" style="background:transparent;border:1px solid rgba(255,255,255,0.04)">試玩</button>
+          </div>
+        </div>
       `;
-      showResult(html);
-    });
-
-    // 按下 Enter 也會預測
-    nameInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        predictBtn.click();
-      }
-    });
-
-    // 簡單的 escape 防 XSS（雖然這是本地頁面）
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+      selectedContainer.appendChild(wrap);
+      document.getElementById('btnPick').addEventListener('click', () => addToTeam(selectedHero));
     }
 
-    // 預設範例（可刪）
-    nameInput.value = '';
+    function renderHeroDetail(h){
+      heroDetail.innerHTML = `
+        <div style="font-weight:700">${h.name}</div>
+        <div class="muted" style="margin-top:6px">${h.desc}</div>
+        <div style="height:8px"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <div style="flex:1">
+            <div class="muted">攻擊</div>
+            <div style="height:6px"></div>
+            <div style="background:rgba(255,255,255,0.04);height:8px;border-radius:6px;overflow:hidden"><div style="width:${40 + (h.id*6)%60}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))"></div></div>
+          </div>
+          <div style="width:8px"></div>
+          <div style="flex:1">
+            <div class="muted">防禦</div>
+            <div style="height:6px"></div>
+            <div style="background:rgba(255,255,255,0.04);height:8px;border-radius:6px;overflow:hidden"><div style="width:${20 + (h.id*4)%60}%;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent))"></div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function addToTeam(h){
+      if(team.length >= 5){ alert('隊伍已滿（5 人）'); return; }
+      team.push({name:h.name, ready:false});
+      renderTeam();
+    }
+
+    function renderTeam(){
+      const list = document.getElementById('partyList');
+      list.innerHTML = '';
+      team.forEach((p, idx) => {
+        const el = document.createElement('div');
+        el.className = 'player';
+        el.innerHTML = `<div class="avatar">${idx+1}</div><div style="flex:1"><div style="font-weight:700">${p.name || p.name}</div><div class="muted">位置：${idx===0? '中路' : '不固定'}</div></div><div class="muted">${p.ready? '準備' : '未準備'}</div>`;
+        list.appendChild(el);
+      });
+      teamCountEl.textContent = team.length;
+    }
+
+    // initial render
+    renderHeroes(HEROES);
+    renderSelected();
+    renderTeam();
+
+    // search
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      const filtered = HEROES.filter(h => h.name.toLowerCase().includes(q) || h.role.toLowerCase().includes(q) || h.tag.join(' ').toLowerCase().includes(q));
+      renderHeroes(filtered);
+    });
+
+    // small UI buttons
+    document.getElementById('btnReady').addEventListener('click', () => {
+      alert('你已經準備好了！ (範例按鈕)');
+    });
+    document.getElementById('btnInvite').addEventListener('click', () => {
+      prompt('輸入好友名稱來邀請（範例）');
+    });
+
   </script>
-</body>
-</html>
-
-
 </body>
 </html>
