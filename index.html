@@ -1,219 +1,86 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>名字 → 預測另一半年紀</title>
-  <style>
-    /* 簡潔美觀的樣式 */
-    :root{
-      --bg:#f6f8fb;
-      --card:#ffffff;
-      --accent:#556bff;
-      --muted:#6b7280;
-      --shadow: 0 8px 24px rgba(34,41,84,0.06);
-      font-family: system-ui, "Noto Sans TC", "Helvetica Neue", Arial;
-    }
-    html,body{height:100%; margin:0; background:linear-gradient(180deg,var(--bg),#eef2ff);}
-    .wrap{
-      min-height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:40px 16px;
-      box-sizing:border-box;
-    }
-    .card{
-      background:var(--card);
-      padding:28px;
-      border-radius:14px;
-      width:100%;
-      max-width:560px;
-      box-shadow:var(--shadow);
-    }
-    h1{margin:0 0 8px; font-size:20px;}
-    p.lead{margin:0 0 18px; color:var(--muted); font-size:14px;}
-    .row{display:flex; gap:10px; margin-bottom:12px;}
-    input[type="text"]{
-      flex:1;
-      padding:12px 14px;
-      border-radius:10px;
-      border:1px solid #e6e9f2;
-      font-size:15px;
-      outline:none;
-    }
-    button{
-      padding:12px 16px;
-      border-radius:10px;
-      border:0;
-      background:var(--accent);
-      color:white;
-      font-weight:600;
-      cursor:pointer;
-      font-size:15px;
-    }
-    .result{
-      margin-top:18px;
-      padding:14px;
-      border-radius:10px;
-      background:linear-gradient(180deg,#fbfdff,#f6f9ff);
-      border:1px solid #eef2ff;
-      font-size:16px;
-    }
-    .meta{margin-top:12px; color:var(--muted); font-size:13px;}
-    footer{margin-top:14px; font-size:13px; color:var(--muted);}
-    .small{font-size:13px; color:#9aa0b4;}
-    .controls{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
-    label{font-size:13px; color:var(--muted);}
-    input[type="range"]{width:160px;}
-    .hint{margin-top:8px;color:#8b92a8;font-size:13px;}
-  </style>
+    <meta charset="UTF-8">
+    <title>你的命定另一半是誰？</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            max-width: 500px;
+            margin: 60px auto;
+            text-align: center;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #result {
+            margin-top: 25px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card" role="main">
-      <h1>名字 → 預測另一半年紀</h1>
-      <p class="lead">輸入名字（或暱稱），按下預測會得到一個穩定的年齡結果。可調整年齡上下限。</p>
 
-      <div class="row">
-        <input id="nameInput" type="text" placeholder="輸入名字，例如：小明 / Lily / 張三" autocomplete="off" />
-        <button id="predictBtn">預測</button>
-      </div>
+<h1>🔮 命定的另一半占卜</h1>
+<p>輸入你的名字，看看你的命定另一半叫什麼！</p>
 
-      <div class="controls">
-        <label for="minRange">最小年齡</label>
-        <input id="minRange" type="range" min="12" max="30" value="18" />
-        <span id="minVal" class="small">18</span>
-        <div style="flex:1"></div>
-        <label for="maxRange">最大年齡</label>
-        <input id="maxRange" type="range" min="30" max="90" value="65" />
-        <span id="maxVal" class="small">65</span>
-      </div>
+<input type="text" id="nameInput" placeholder="輸入你的名字">
+<br>
+<button onclick="predict()">開始占卜！</button>
 
-      <div class="hint">提示：拖動滑桿可以改變年齡範圍（預設為 18–65）。</div>
+<div id="result"></div>
 
-      <div id="result" class="result" aria-live="polite" style="display:none"></div>
+<script>
+    // 固定名字清單（你可以自由修改）
+    const partnerNames = [
+         "小明", "小美", "阿杰", "婷婷", "阿華", "佳玲", "志強", "淑芬",
+    "子瑜", "柏翰", "雅婷", "維宇", "安安", "家豪", "允潔",
+    "詠晴", "冠宇", "怡萱", "承翰", "詩涵", "俊傑", "湘琳", "哲瑋",
+    "婉君", "俊豪", "嘉雯", "冠廷", "雅雯", "子豪", "宜君", "欣怡",
+    "孟勳", "佩珊", "奕辰", "語彤", "郁婷", "浚誠", "嘉玲", "俊凱",
+    "思妤", "承恩", "芷妍", "晉豪", "書妍", "博翔", "珮瑜", "佳樺",
+    "冠霖", "雅筑", "雨潔", "柏宇", "子庭", "佳蓉", "昱廷", "怡婷",
+    "心怡", "冠傑", "筱婷", "柏諭", "佳穎", "宇軒", "婕妤", "宗翰",
+    "宜庭", "書瑋", "珮甄", "宥勝", "俞安", "承翰", "玟瑄", "柏安",
+    "依婷", "宛儒", "昱安", "宥廷", "家誠", "采潔", "柏翰", "芊瑜",
+    "昀蓁", "政勳", "佳瑩", "若瑄", "昱翔", "雅欣", "煜翔", "怡珊",
+    "怡安", "庭瑄", "哲宇", "湘瑜", "佳恩", "宥嘉", "煜宸", "語兒",
+    "昕芸", "靖雯", "柏睿", "哲安"
+    ];
 
-      <div class="meta">
-        <div>演算法：把名字轉成數字雜湊（可重複），再映射到你設定的年齡範圍內。</div>
-        <div class="small">若想產生更浪漫或幽默的描述，我也可以幫你加上「個性」「約會建議」等額外文字！</div>
-      </div>
-
-      <footer>
-        <div class="small">版本 1 — 完全在瀏覽器執行，不會上傳任何資料。</div>
-      </footer>
-    </div>
-  </div>
-
-  <script>
-    // ----- 設定 -----
-    const nameInput = document.getElementById('nameInput');
-    const predictBtn = document.getElementById('predictBtn');
-    const resultEl = document.getElementById('result');
-    const minRange = document.getElementById('minRange');
-    const maxRange = document.getElementById('maxRange');
-    const minVal = document.getElementById('minVal');
-    const maxVal = document.getElementById('maxVal');
-
-    // 更新顯示的滑桿數值
-    function updateRangeDisplays(){
-      minVal.textContent = minRange.value;
-      maxVal.textContent = maxRange.value;
-      // 確保 min <= max
-      if (parseInt(minRange.value) >= parseInt(maxRange.value)) {
-        // 若衝突，自動維持最小差距 1
-        maxRange.value = Math.min(parseInt(minRange.value) + 1, maxRange.max);
-        maxVal.textContent = maxRange.value;
-      }
-    }
-    minRange.addEventListener('input', updateRangeDisplays);
-    maxRange.addEventListener('input', updateRangeDisplays);
-    updateRangeDisplays();
-
-    // ----- 核心：把名字 deterministic 轉成年齡 -----
-    // 演算法說明（簡短）：
-    // 1. 以名字每個字元的 charCode 計算一個整數雜湊值（考慮字符位置加權）。
-    // 2. 將雜湊值轉為非負，取模以映射到目標年齡範圍（min..max）。
-    function hashNameToNumber(name) {
-      // 簡單且穩定的雜湊：基於 DJB2 的變體
-      // 保留 unicode 字元處理（適用中文和英文）
-      let h = 5381;
-      for (let i = 0; i < name.length; i++) {
-        // 使用 charCodeAt 處理單一 UTF-16 code unit（對絕大多數名字足夠）
-        h = ((h << 5) + h) ^ name.charCodeAt(i); // h * 33 ^ c
-        // 限制在 32-bit 範圍，避免溢位問題
-        h = h | 0;
-      }
-      return Math.abs(h);
+    // 字串 hash：讓同一名字永遠得到同一結果
+    function hashString(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return Math.abs(hash);
     }
 
-    function predictAgeFromName(name, minAge = 18, maxAge = 65) {
-      name = (name || '').trim();
-      if (!name) return null;
-      const num = hashNameToNumber(name);
-      const range = Math.max(1, parseInt(maxAge) - parseInt(minAge) + 1);
-      const age = (num % range) + parseInt(minAge);
-      return age;
+    function predict() {
+        const name = document.getElementById("nameInput").value.trim();
+        const resultDiv = document.getElementById("result");
+
+        if (!name) {
+            resultDiv.textContent = "請先輸入名字！";
+            return;
+        }
+
+        // 算出命定名字
+        const h = hashString(name);
+        const partner = partnerNames[h % partnerNames.length];
+
+        resultDiv.textContent = `${name} 的命定另一半是「${partner}」💖`;
     }
+</script>
 
-    // ----- UI 行為 -----
-    function showResult(text, extraClass='') {
-      resultEl.style.display = 'block';
-      resultEl.innerHTML = text;
-      if (extraClass) {
-        resultEl.className = 'result ' + extraClass;
-      } else {
-        resultEl.className = 'result';
-      }
-    }
-
-    predictBtn.addEventListener('click', () => {
-      const name = nameInput.value;
-      const min = parseInt(minRange.value);
-      const max = parseInt(maxRange.value);
-      if (!name.trim()) {
-        showResult('請先輸入名字喔！', 'warn');
-        nameInput.focus();
-        return;
-      }
-      const age = predictAgeFromName(name, min, max);
-      // 可以用一些額外文字讓結果更有趣
-      const adjectives = [
-        '溫柔又可靠',
-        '有點神祕但超吸引人',
-        '幽默風趣、笑點很高',
-        '成熟穩重，像個大樹',
-        '活潑外向，愛玩愛笑',
-        '細心體貼，適合一起生活'
-      ];
-      const pick = adjectives[ Math.abs(hashNameToNumber(name + 'adj')) % adjectives.length ];
-      const html = `
-        <strong>預測年齡：</strong> ${age} 歲<br/>
-        <span class="small">（名字：<em>${escapeHtml(name)}</em>；範圍：${min}–${max}）</span>
-        <div style="margin-top:8px;">小提醒：我們覺得對方個性可能是 — <strong>${pick}</strong></div>
-      `;
-      showResult(html);
-    });
-
-    // 按下 Enter 也會預測
-    nameInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        predictBtn.click();
-      }
-    });
-
-    // 簡單的 escape 防 XSS（雖然這是本地頁面）
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    }
-
-    // 預設範例（可刪）
-    nameInput.value = '';
-  </script>
 </body>
 </html>
-
