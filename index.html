@@ -1,311 +1,770 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MOBA 風格英雄大廳 — 範例</title>
-  <style>
-    /* 風格說明：現代、暗色系、玻璃質感卡片、微動效 */
-    :root{
-      --bg1:#0b1020;
-      --bg2:#0f1724;
-      --card:rgba(255,255,255,0.04);
-      --glass:rgba(255,255,255,0.06);
-      --accent:#8b5cf6;
-      --accent-2:#06b6d4;
-      --muted:rgba(255,255,255,0.6);
-      --glass-border:rgba(255,255,255,0.06);
-      font-family: Inter, "Noto Sans TC", system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-    }
-    html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 10% 10%, rgba(139,92,246,0.12), transparent), linear-gradient(180deg,var(--bg1),var(--bg2));color:#fff}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>老人模擬器 — Elder Life Simulator (範例)</title>
+<style>
+  :root{
+    --bg:#0f1720;
+    --panel:#0b1220;
+    --glass: rgba(255,255,255,0.04);
+    --accent:#f59e0b;
+    --accent-2:#fb923c;
+    --muted:#9aa3b2;
+    --card-radius:14px;
+    font-family: "Noto Sans TC", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071022,#0f1724);color:#e6eef8}
+  .app{
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap:18px;
+    padding:18px;
+    min-height:100vh;
+    box-sizing:border-box;
+  }
 
-    /* page layout */
-    .wrap{min-height:100%;display:flex;flex-direction:column}
-    header{display:flex;align-items:center;gap:18px;padding:20px 28px;border-bottom:1px solid rgba(255,255,255,0.03);backdrop-filter: blur(6px)}
-    .logo{display:flex;align-items:center;gap:10px}
-    .logo .emblem{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(11,12,26,0.6)}
-    .logo h1{font-size:18px;margin:0}
-    .header-actions{margin-left:auto;display:flex;gap:12px;align-items:center}
+  /* Game view (left) */
+  .game-wrap{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    border-radius:var(--card-radius);
+    padding:12px;
+    box-shadow:0 18px 40px rgba(2,6,23,0.6);
+    position:relative;
+    overflow:hidden;
+  }
+  .viewport{
+    background:linear-gradient(180deg,#e9f0f6 0%, #f7fbff 100%);
+    border-radius:10px;
+    height:720px;
+    max-height:calc(100vh - 72px);
+    display:block;
+    width:100%;
+    position:relative;
+    overflow:hidden;
+    box-shadow: inset 0 2px 12px rgba(11,20,40,0.06);
+  }
 
-    /* main area */
-    .main{display:flex;gap:24px;padding:28px;width:100%;box-sizing:border-box}
-    .left{flex:1;min-width:320px}
-    .right{width:420px}
+  /* HUD over game */
+  .hud{
+    position:absolute;
+    left:28px;
+    top:22px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    z-index:30;
+  }
+  .panel{
+    background:var(--panel);
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid var(--glass);
+    box-shadow:0 6px 18px rgba(2,6,23,0.25);
+    min-width:96px;
+  }
+  .panel h4{margin:0;font-size:13px}
+  .status-row{display:flex;gap:8px;align-items:center;margin-top:6px}
+  .bar{
+    height:10px;
+    background:rgba(255,255,255,0.06);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .bar > i{display:block;height:100%;width:50%;background:linear-gradient(90deg,var(--accent),var(--accent-2));}
 
-    /* lobby card */
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:18px;border:1px solid var(--glass-border);box-shadow:0 10px 30px rgba(2,6,23,0.6)}
-    .title{display:flex;align-items:center;gap:10px}
-    .subtitle{color:var(--muted);font-size:13px}
+  /* Right column UI */
+  aside.ui{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;
+    padding:12px;
+    border:1px solid var(--glass);
+    box-shadow:0 10px 30px rgba(2,6,23,0.5);
+  }
+  .card h3{margin:0 0 8px 0}
+  .muted{color:var(--muted);font-size:13px}
 
-    /* hero grid */
-    .hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:14px}
-    .hero{position:relative;border-radius:12px;overflow:hidden;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:transform .25s ease, box-shadow .25s ease}
-    .hero:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,23,0.6)}
-    .hero .svgwrap{width:100%;height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
-    .hero h3{margin:0;font-size:15px}
-    .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
-    .hero .tags{display:flex;gap:8px;margin-top:10px}
-    .tag{font-size:12px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
+  /* controls */
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{
+    padding:8px 12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#0b1020;font-weight:700;cursor:pointer;
+  }
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:600}
 
-    /* selected hero preview */
-    .preview{display:flex;gap:14px;align-items:center}
-    .preview .art{width:160px;height:160px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 20px 40px rgba(11,92,246,0.12)}
-    .preview .info h2{margin:0 0 6px}
-    .preview .info p{margin:0;color:var(--muted)}
-    .btn{padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));font-weight:700;cursor:pointer}
+  /* map objects (canvas drawn, but reserve legend sections) */
+  .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 
-    /* party list on right */
-    .party-list{display:flex;flex-direction:column;gap:10px}
-    .player{display:flex;gap:12px;align-items:center;padding:8px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
-    .player .avatar{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#334155,#0ea5a4);display:flex;align-items:center;justify-content:center;font-weight:700}
-    .muted{color:var(--muted)}
+  /* touch joystick for mobile */
+  .touch-controls{
+    display:none;
+    position:absolute;
+    left:18px; bottom:18px; z-index:50;
+  }
+  .touch-pad{
+    width:120px;height:120px;border-radius:999px;background:rgba(0,0,0,0.18);backdrop-filter: blur(6px);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03)
+  }
 
-    /* small interactions */
-    .glow{position:relative}
-    .glow::after{content:'';position:absolute;inset:0;border-radius:inherit;box-shadow:0 0 40px rgba(139,92,246,0.08);opacity:0;transition:opacity .25s}
-    .hero:hover .glow::after{opacity:1}
+  /* small popup */
+  .toast{
+    position:absolute;right:22px;top:22px;background:linear-gradient(180deg,#0b1220,#08101a);padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);z-index:40;box-shadow:0 10px 30px rgba(2,6,23,0.5)
+  }
 
-    /* responsive */
-    @media (max-width:900px){
-      .main{flex-direction:column}
-      .right{width:100%}
-      .preview .art{width:120px;height:120px}
-    }
+  /* responsive */
+  @media (max-width:1000px){
+    .app{grid-template-columns:1fr; padding:12px}
+    aside.ui{order:2}
+    .touch-controls{display:block}
+  }
 
-    /* subtle entrance */
-    .fade-in{animation:fadeIn .6s ease both}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
-  </style>
+  /* little helper text */
+  .kbd{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:6px;font-weight:700;color:var(--muted)}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="logo">
-        <div class="emblem" aria-hidden>
-          <!-- simple SVG emblem -->
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z" fill="white" opacity="0.95" />
-          </svg>
+<div class="app" role="application" aria-label="老人模擬器">
+  <div class="game-wrap" id="gameWrap">
+    <div class="hud" id="hud">
+      <div class="panel" aria-hidden>
+        <h4>狀態</h4>
+        <div class="status-row">
+          <div style="min-width:80px">
+            <div class="muted">體力</div>
+            <div class="bar" style="margin-top:6px"><i id="barEnergy"></i></div>
+          </div>
         </div>
-        <div>
-          <h1>傳說樣式大廳（範例）</h1>
-          <div class="subtitle">英雄選擇與隊伍預覽 — 前端範例</div>
+        <div class="status-row">
+          <div style="min-width:80px">
+            <div class="muted">平衡</div>
+            <div class="bar" style="margin-top:6px"><i id="barBalance"></i></div>
+          </div>
         </div>
+        <div style="margin-top:6px" class="muted">記憶 <span id="memVal">中</span></div>
       </div>
-      <div class="header-actions">
-        <div class="muted">遊戲室：#無名大廳</div>
-        <button class="btn" id="btnReady">準備</button>
+
+      <div class="panel" aria-hidden>
+        <h4>時間</h4>
+        <div style="font-weight:700;margin-top:6px" id="clock">07:30</div>
+        <div class="muted" style="font-size:12px;margin-top:6px" id="dayPhase">早晨</div>
       </div>
-    </header>
+    </div>
 
-    <main class="main">
-      <section class="left">
-        <div class="card fade-in">
-          <div class="title">
-            <div>
-              <h2 style="margin:0">英雄選單</h2>
-              <div class="subtitle">點擊卡片查看並選擇英雄</div>
-            </div>
-            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-              <input id="search" placeholder="搜尋英雄" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit" />
-            </div>
-          </div>
+    <div class="viewport" id="viewport" role="region" aria-label="模擬器視窗">
+      <!-- we will draw the map and character onto this canvas -->
+      <canvas id="gameCanvas" width="1200" height="720" style="display:block;width:100%;height:100%"></canvas>
 
-          <div class="hero-grid" id="heroGrid" aria-live="polite">
-            <!-- heroes generated by JS -->
-          </div>
-        </div>
+      <!-- touch joystick for mobile -->
+      <div class="touch-controls" id="touchControls">
+        <div class="touch-pad" id="touchPad"><div class="muted">滑動控制</div></div>
+      </div>
 
-        <div style="height:18px"></div>
-
-        <div class="card fade-in">
-          <div class="title"><h2 style="margin:0">已選擇</h2><div class="subtitle" style="margin-left:8px">你的暫存英雄</div></div>
-          <div id="selectedContainer" style="margin-top:12px">
-            <div class="preview" id="emptyPreview">
-              <div class="art" style="background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));">?</div>
-              <div class="info"><h2 class="muted">尚未選擇英雄</h2><p class="muted">請從上方選擇一位英雄以檢視詳細資料</p></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <aside class="right">
-        <div class="card fade-in">
-          <h3 style="margin:0">隊伍</h3>
-          <div class="subtitle" style="margin-top:6px">隊伍人數：<span id="teamCount">1</span>/5</div>
-
-          <div class="party-list" id="partyList" style="margin-top:12px">
-            <div class="player">
-              <div class="avatar">你</div>
-              <div style="flex:1">
-                <div style="font-weight:700">玩家_001</div>
-                <div class="muted">位置：中路</div>
-              </div>
-              <div class="muted">準備</div>
-            </div>
-          </div>
-
-          <div style="height:12px"></div>
-          <button class="btn" id="btnInvite">邀請好友</button>
-        </div>
-
-        <div style="height:14px"></div>
-
-        <div class="card fade-in">
-          <h3 style="margin:0">英雄詳情</h3>
-          <div class="subtitle">點擊任一英雄卡檢視技能與屬性</div>
-          <div id="heroDetail" style="margin-top:12px">
-            <div class="muted">尚未選擇英雄</div>
-          </div>
-        </div>
-      </aside>
-    </main>
+      <!-- toast -->
+      <div id="toast" class="toast" style="display:none">提示</div>
+    </div>
   </div>
 
-  <script>
-    // 範例英雄資料（純示範用，請替換成你的資料與圖片）
-    const HEROES = [
-      {id:1,name:'赤焰獵手', role:'射手', tag:['遠程','爆發'], desc:'擅長單體輸出與追擊。'},
-      {id:2,name:'寒影刺客', role:'刺客', tag:['機動','瞬殺'], desc:'能迅速切入敵陣，秒殺脆皮。'},
-      {id:3,name:'守護聖騎', role:'坦克', tag:['保護','控制'], desc:'擁有強力嘲諷與生存能力。'},
-      {id:4,name:'星靈法師', role:'法師', tag:['範圍','爆發'], desc:'操控星辰能量造成群體傷害。'},
-      {id:5,name:'綠野弓手', role:'射手', tag:['持續輸出','支援'], desc:'利用地形與陷阱控制戰場。'},
-      {id:6,name:'浪潮領主', role:'戰士', tag:['近戰','持久'], desc:'擅長正面對決與回復。'},
-      {id:7,name:'暮光術士', role:'法師', tag:['削弱','控場'], desc:'破壞敵人節奏並回收法力。'},
-      {id:8,name:'焚林薩滿', role:'輔助', tag:['治療','增益'], desc:'維持隊友戰鬥續航與團隊增益。'}
-    ];
+  <aside class="ui">
+    <div class="card">
+      <h3>任務面板</h3>
+      <div class="muted">當前任務（點擊執行或接近互動物件時使用）</div>
+      <ul id="tasks" style="margin-top:8px">
+        <!-- tasks auto-render -->
+      </ul>
+      <div style="height:8px"></div>
+      <div class="controls">
+        <button class="btn" id="btnRest">坐下休息</button>
+        <button class="btn ghost" id="btnTakeMed">吃藥</button>
+        <button class="btn ghost" id="btnRead">閱讀報紙</button>
+      </div>
+    </div>
 
-    const heroGrid = document.getElementById('heroGrid');
-    const heroDetail = document.getElementById('heroDetail');
-    const selectedContainer = document.getElementById('selectedContainer');
-    const teamCountEl = document.getElementById('teamCount');
-    const searchInput = document.getElementById('search');
+    <div class="card">
+      <h3>說明</h3>
+      <div class="muted">控制：</div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <div class="kbd">W / ↑</div><div class="muted">前進</div>
+        <div class="kbd">S / ↓</div><div class="muted">後退</div>
+        <div class="kbd">A / ←</div><div class="muted">左</div>
+        <div class="kbd">D / →</div><div class="muted">右</div>
+        <div class="kbd">E</div><div class="muted">互動</div>
+      </div>
+      <div class="muted" style="margin-top:8px">觸控：螢幕左下滑動控制移動，點擊互動物件。</div>
+    </div>
 
-    let selectedHero = null;
-    let team = [{name:'玩家_001', ready:true}];
+    <div class="card">
+      <h3>屬性面板</h3>
+      <div class="muted">體力：影響行走速度與操作精準度</div>
+      <div style="height:8px"></div>
+      <div class="muted">平衡：太低有跌倒風險</div>
+      <div style="height:12px"></div>
+      <div class="muted">記憶：會影響完成任務的提示次數</div>
+    </div>
+  </aside>
+</div>
 
-    function renderHeroes(list){
-      heroGrid.innerHTML = '';
-      list.forEach(h => {
-        const el = document.createElement('div');
-        el.className = 'hero glow';
-        el.tabIndex = 0;
-        el.dataset.id = h.id;
-        el.innerHTML = `
-          <div class="svgwrap">${generateHeroSVG(h)}</div>
-          <h3>${h.name}</h3>
-          <p>${h.role}</p>
-          <div class="tags">${h.tag.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-        `;
-        el.addEventListener('click', () => onSelectHero(h));
-        el.addEventListener('keydown', (e) => { if(e.key==='Enter') onSelectHero(h); });
-        heroGrid.appendChild(el);
-      });
+<script>
+/*
+ Elder Life Simulator — single-file front-end demo
+ Features:
+ - Canvas-based top-down map rendering
+ - Player movement (keyboard + simple touch)
+ - Attributes: energy, balance, memory
+ - Interactable objects: bench, medicine cabinet, bookshelf, door, park path
+ - Simple tasks + notifications
+ - Day cycle & time progression
+ - Mobile-friendly touch joystick (basic)
+*/
+
+(() => {
+  // canvas setup
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+
+  // logical map size (we'll scale to canvas size)
+  const MAP_W = 1200, MAP_H = 720;
+
+  // game state
+  const player = {
+    x: MAP_W/2, y: MAP_H/2 + 60,
+    r: 18,
+    speed: 120, // px per second base
+    energy: 0.8,    // 0..1
+    balance: 0.85,  // 0..1
+    memory: 0.8,    // 0..1
+    carrying: false,
+  };
+
+  const timeState = {
+    minutes: 7*60 + 30, // 07:30
+    tickSpeed: 1, // game minutes per real second (adjust for pacing)
+  };
+
+  // objects in world (x,y, type, radius)
+  const objects = [
+    {id:'homeDoor', x:200, y:560, type:'door', label:'家門'},
+    {id:'cabinet', x:260, y:520, type:'cabinet', label:'藥櫃'},
+    {id:'bench', x:360, y:420, type:'bench', label:'公園長椅'},
+    {id:'pathStart', x:420, y:380, type:'path', label:'散步小徑'},
+    {id:'bookshelf', x:820, y:160, type:'bookshelf', label:'書櫃'},
+    {id:'kitchen', x:200, y:480, type:'kitchen', label:'廚房'},
+    {id:'busStop', x:1020, y:540, type:'bus', label:'公車站'},
+  ];
+
+  // tasks
+  let tasks = [
+    {id:'takeMed', title:'吃藥（早）', done:false, hint:'到藥櫃附近按 E 吃藥', related:'cabinet'},
+    {id:'walk', title:'外出散步', done:false, hint:'前往散步小徑並停留 10 秒', related:'pathStart'},
+    {id:'read', title:'閱讀報紙', done:false, hint:'靠近書櫃按 E 閱讀', related:'bookshelf'},
+  ];
+
+  // input state
+  const input = {up:false,down:false,left:false,right:false, interact:false};
+  let lastTime = performance.now();
+
+  // UI elements
+  const barEnergy = document.getElementById('barEnergy');
+  const barBalance = document.getElementById('barBalance');
+  const memVal = document.getElementById('memVal');
+  const clockEl = document.getElementById('clock');
+  const dayPhaseEl = document.getElementById('dayPhase');
+  const tasksEl = document.getElementById('tasks');
+  const toast = document.getElementById('toast');
+
+  function renderTasks(){
+    tasksEl.innerHTML = '';
+    tasks.forEach(t => {
+      const li = document.createElement('li');
+      li.style.margin = '8px 0';
+      li.innerHTML = `<strong style="${t.done? 'text-decoration: line-through; opacity:0.7':''}">${t.title}</strong><div class="muted" style="font-size:13px">${t.done? '已完成' : t.hint}</div>`;
+      tasksEl.appendChild(li);
+    });
+  }
+  renderTasks();
+
+  // utility
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function showToast(msg, ms=2500){
+    toast.style.display = 'block';
+    toast.textContent = msg;
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=> toast.style.display = 'none', ms);
+  }
+
+  // keyboard
+  window.addEventListener('keydown', (e)=>{
+    if(e.key==='w' || e.key==='ArrowUp') input.up = true;
+    if(e.key==='s' || e.key==='ArrowDown') input.down = true;
+    if(e.key==='a' || e.key==='ArrowLeft') input.left = true;
+    if(e.key==='d' || e.key==='ArrowRight') input.right = true;
+    if(e.key==='e' || e.key==='E') input.interact = true;
+  });
+  window.addEventListener('keyup', (e)=>{
+    if(e.key==='w' || e.key==='ArrowUp') input.up = false;
+    if(e.key==='s' || e.key==='ArrowDown') input.down = false;
+    if(e.key==='a' || e.key==='ArrowLeft') input.left = false;
+    if(e.key==='d' || e.key==='ArrowRight') input.right = false;
+    if(e.key==='e' || e.key==='E') input.interact = false;
+  });
+
+  // touch joystick (basic)
+  const touchPad = document.getElementById('touchPad');
+  let touchPointer = null;
+  let touchVec = {x:0,y:0};
+  touchPad.addEventListener('pointerdown', (e)=>{
+    touchPad.setPointerCapture(e.pointerId);
+    touchPointer = e.pointerId;
+    touchPad.dataset.active = '1';
+  });
+  touchPad.addEventListener('pointermove', (e)=>{
+    if(e.pointerId !== touchPointer) return;
+    const rect = touchPad.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const max = rect.width/2;
+    touchVec.x = clamp(dx / max, -1, 1);
+    touchVec.y = clamp(dy / max, -1, 1);
+    // map to input
+    input.up = touchVec.y < -0.3;
+    input.down = touchVec.y > 0.3;
+    input.left = touchVec.x < -0.3;
+    input.right = touchVec.x > 0.3;
+  });
+  touchPad.addEventListener('pointerup', (e)=>{
+    if(e.pointerId !== touchPointer) return;
+    touchPad.releasePointerCapture(e.pointerId);
+    touchPointer = null;
+    touchVec = {x:0,y:0};
+    input.up = input.down = input.left = input.right = false;
+    touchPad.dataset.active = '0';
+  });
+
+  // UI buttons
+  document.getElementById('btnRest').addEventListener('click', ()=> sitAndRest());
+  document.getElementById('btnTakeMed').addEventListener('click', ()=> tryInteract('cabinet'));
+  document.getElementById('btnRead').addEventListener('click', ()=> tryInteract('bookshelf'));
+
+  // interaction function: try interacting with nearest object of a given id or generic interact key E
+  function tryInteract(forceId){
+    // if forceId provided, interact with that object directly (simulate close enough)
+    if(forceId){
+      const obj = objects.find(o=> o.id===forceId);
+      if(!obj){ showToast('找不到物件'); return; }
+      // move player near object quickly (for demo) and execute
+      player.x = obj.x + (Math.random()*30 - 15);
+      player.y = obj.y + (Math.random()*20 - 10);
+      performInteraction(obj);
+      return;
+    }
+    // otherwise, find nearby object within radius
+    const nearby = objects.find(o=>{
+      const dx = player.x - o.x, dy = player.y - o.y;
+      return Math.hypot(dx,dy) < 56;
+    });
+    if(nearby){
+      performInteraction(nearby);
+    } else {
+      showToast('附近沒有可以互動的物件 (走近後按 E)');
+    }
+  }
+
+  function performInteraction(o){
+    if(o.type === 'cabinet'){
+      // take medicine
+      player.energy = clamp(player.energy + 0.18, 0, 1);
+      player.balance = clamp(player.balance + 0.06, 0, 1);
+      markTaskDone('takeMed');
+      showToast('你吃了定時藥，感覺穩定一些。');
+    } else if(o.type === 'bench'){
+      // sit
+      sitAndRest();
+    } else if(o.type === 'bookshelf'){
+      // read
+      player.memory = clamp(player.memory + 0.12, 0, 1);
+      markTaskDone('read');
+      showToast('閱讀報紙，回想起了昔日回憶。');
+    } else if(o.type === 'door'){
+      // go out/come in (toggle)
+      showToast('你走出/進入家門（範例）');
+    } else if(o.type === 'path'){
+      // start walking task
+      markTaskProgress('walk', 'start');
+      showToast('開始沿著小徑散步，請在小徑上停留一段時間。');
+    } else {
+      showToast('互動：' + o.label);
+    }
+  }
+
+  // task helpers
+  function markTaskDone(id){
+    const t = tasks.find(x=>x.id===id);
+    if(t && !t.done){
+      t.done = true;
+      renderTasks();
+    }
+  }
+  let walkTimer = 0;
+  function markTaskProgress(id, action){
+    if(id==='walk' && action==='start') walkTimer = 0;
+  }
+
+  // rest (sit on bench) logic
+  let resting = false;
+  function sitAndRest(){
+    resting = true;
+    showToast('坐下休息中...');
+    // for demo, rest for 3 seconds to recover energy
+    setTimeout(()=>{
+      player.energy = clamp(player.energy + 0.28, 0, 1);
+      player.balance = clamp(player.balance + 0.08, 0, 1);
+      resting = false;
+      showToast('休息完畢，感覺比較有力氣了。');
+    }, 3000);
+  }
+
+  // update/draw loop
+  function update(dt){
+    // advance game time
+    timeState.minutes += dt * timeState.tickSpeed;
+    // wrap day
+    if(timeState.minutes >= 24*60) timeState.minutes -= 24*60;
+
+    // player movement vector
+    let vx = 0, vy = 0;
+    if(input.up) vy -= 1;
+    if(input.down) vy += 1;
+    if(input.left) vx -= 1;
+    if(input.right) vx += 1;
+    // normalize
+    const len = Math.hypot(vx,vy);
+    if(len>0.001){
+      vx /= len; vy /= len;
     }
 
-    function generateHeroSVG(h){
-      // 純占位的抽象 SVG 圖示（避免版權問題）
-      const seed = (h.id * 137) % 255;
-      return `<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="g${h.id}" x1="0" x2="1"><stop offset="0" stop-color="rgba(255,255,255,0.12)"/><stop offset="1" stop-color="rgba(255,255,255,0.02)"/></linearGradient>
-        </defs>
-        <rect x="6" y="6" width="108" height="68" rx="10" fill="url(#g${h.id})" stroke="rgba(255,255,255,0.02)"/>
-        <circle cx="36" cy="40" r="22" fill="hsl(${seed} 70% 55%)" opacity="0.95" />
-        <path d="M60 20 Q80 40 60 60" stroke="white" stroke-opacity="0.12" stroke-width="8" fill="none" stroke-linecap="round"/>
-      </svg>`;
+    // movement speed affected by energy and balance (simulate slower when tired)
+    const fatigueFactor = 0.5 + 0.5 * player.energy; // 0.5..1
+    const balanceFactor = 0.6 + 0.4 * player.balance; // 0.6..1
+    const speed = player.speed * fatigueFactor * balanceFactor;
+    player.x += vx * speed * dt;
+    player.y += vy * speed * dt;
+
+    // clamp to map
+    player.x = clamp(player.x, 40, MAP_W - 40);
+    player.y = clamp(player.y, 40, MAP_H - 40);
+
+    // passive energy drain when moving
+    if(len>0.1){
+      player.energy = clamp(player.energy - 0.06 * dt, 0, 1);
+      // moving reduces balance slightly over time
+      player.balance = clamp(player.balance - 0.01 * dt, 0, 1);
+    } else {
+      // recover slowly when standing
+      player.energy = clamp(player.energy + 0.02 * dt, 0, 1);
+      player.balance = clamp(player.balance + 0.01 * dt, 0, 1);
     }
 
-    function onSelectHero(h){
-      selectedHero = h;
-      renderSelected();
-      renderHeroDetail(h);
+    // memory decays slowly over day
+    player.memory = clamp(player.memory - 0.002 * dt * 0.5, 0, 1);
+
+    // chance to stumble if balance is low and moving
+    if(len>0.1 && player.balance < 0.25 && Math.random() < 0.01 * dt){
+      // stumble event
+      player.energy = clamp(player.energy - 0.18, 0, 1);
+      showToast('你踩空了，搖搖欲墜但穩住了。');
     }
 
-    function renderSelected(){
-      selectedContainer.innerHTML = '';
-      if(!selectedHero) {
-        selectedContainer.innerHTML = document.getElementById('emptyPreview').outerHTML;
-        return;
+    // handle E interaction
+    if(input.interact){
+      // attempt interact (will check nearby)
+      tryInteract();
+      input.interact = false;
+    }
+
+    // walk task detection: if player near path and moving slowly stay count
+    const path = objects.find(o=> o.type === 'path');
+    if(path){
+      const d = Math.hypot(player.x - path.x, player.y - path.y);
+      if(d < 70 && (Math.hypot(vx, vy) > 0.1 || resting)){
+        // accumulate time walking on path
+        walkTimer += dt;
+        if(!tasks.find(t=>t.id==='walk').done && walkTimer >= 10){
+          markTaskDone('walk');
+          showToast('你完成了散步任務，感覺心情愉快。');
+        }
       }
-      const wrap = document.createElement('div');
-      wrap.className = 'preview';
-      wrap.innerHTML = `
-        <div class="art">${generateHeroSVG(selectedHero)}</div>
-        <div class="info">
-          <h2>${selectedHero.name}</h2>
-          <p class="muted">${selectedHero.role} • ${selectedHero.tag.join(' / ')}</p>
-          <div style="height:8px"></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn" id="btnPick">選擇</button>
-            <button class="btn" id="btnPreview" style="background:transparent;border:1px solid rgba(255,255,255,0.04)">試玩</button>
-          </div>
-        </div>
-      `;
-      selectedContainer.appendChild(wrap);
-      document.getElementById('btnPick').addEventListener('click', () => addToTeam(selectedHero));
     }
 
-    function renderHeroDetail(h){
-      heroDetail.innerHTML = `
-        <div style="font-weight:700">${h.name}</div>
-        <div class="muted" style="margin-top:6px">${h.desc}</div>
-        <div style="height:8px"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <div style="flex:1">
-            <div class="muted">攻擊</div>
-            <div style="height:6px"></div>
-            <div style="background:rgba(255,255,255,0.04);height:8px;border-radius:6px;overflow:hidden"><div style="width:${40 + (h.id*6)%60}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))"></div></div>
-          </div>
-          <div style="width:8px"></div>
-          <div style="flex:1">
-            <div class="muted">防禦</div>
-            <div style="height:6px"></div>
-            <div style="background:rgba(255,255,255,0.04);height:8px;border-radius:6px;overflow:hidden"><div style="width:${20 + (h.id*4)%60}%;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent))"></div></div>
-          </div>
-        </div>
-      `;
+    // slow down timeSpeed at night
+    if(getHour() >= 22 || getHour() < 6){
+      timeState.tickSpeed = 0.6;
+    } else {
+      timeState.tickSpeed = 1.0;
     }
 
-    function addToTeam(h){
-      if(team.length >= 5){ alert('隊伍已滿（5 人）'); return; }
-      team.push({name:h.name, ready:false});
-      renderTeam();
+    // update HUD bars
+    barEnergy.style.width = Math.floor(player.energy * 100) + '%';
+    barBalance.style.width = Math.floor(player.balance * 100) + '%';
+    // apply width to inner elements
+    document.getElementById('barEnergy').style.width = (player.energy*100)+'%';
+    document.getElementById('barBalance').style.width = (player.balance*100)+'%';
+
+    memVal.textContent = (player.memory>0.66)? '好' : (player.memory>0.33)? '中' : '差';
+
+    // update clock display
+    const hh = Math.floor(timeState.minutes / 60);
+    const mm = Math.floor(timeState.minutes % 60);
+    clockEl.textContent = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+    dayPhaseEl.textContent = (hh<6? '深夜' : hh<12? '早晨' : hh<18? '午後' : '傍晚');
+
+  }
+
+  function getHour(){ return Math.floor(timeState.minutes/60); }
+
+  // draw world (simple top-down)
+  function draw(){
+    // scale to current canvas size
+    const w = canvas.width = canvas.clientWidth * devicePixelRatio;
+    const h = canvas.height = canvas.clientHeight * devicePixelRatio;
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    // clear
+    ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+
+    // background grass / walkway
+    drawBackground();
+
+    // draw objects
+    objects.forEach(o => drawObject(o));
+
+    // draw player shadow
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.ellipse(player.x, player.y + player.r * 0.9, player.r*1.6, player.r*0.7, 0,0,Math.PI*2);
+    ctx.fill();
+
+    // draw player (circle with cane)
+    ctx.save();
+    // body
+    ctx.beginPath();
+    ctx.fillStyle = '#f6e0c3';
+    ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+    ctx.fill();
+    // face details
+    ctx.beginPath();
+    ctx.fillStyle = '#4b5563';
+    ctx.fillRect(player.x - 6, player.y - 4, 4, 2);
+    ctx.fillRect(player.x + 3, player.y - 4, 4, 2);
+    // mouth
+    ctx.beginPath();
+    ctx.strokeStyle = '#7b8791';
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(player.x - 5, player.y + 6);
+    ctx.lineTo(player.x + 5, player.y + 6);
+    ctx.stroke();
+    // cane
+    ctx.beginPath();
+    ctx.strokeStyle = '#6b4f2c';
+    ctx.lineWidth = 3;
+    ctx.moveTo(player.x + player.r*0.7, player.y + player.r*0.4);
+    ctx.lineTo(player.x + player.r*1.8, player.y + player.r*1.6);
+    ctx.stroke();
+
+    ctx.restore();
+
+    // draw UI overlays near player (e.g., name)
+    ctx.font = '13px system-ui';
+    ctx.fillStyle = '#0b1020';
+    ctx.fillText('你', player.x - 6, player.y - player.r - 8);
+
+    // highlight nearest interactable if close
+    const nearby = objects.find(o=> Math.hypot(player.x-o.x, player.y-o.y) < 60);
+    if(nearby){
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255,160,80,0.85)';
+      ctx.lineWidth = 2;
+      ctx.ellipse(nearby.x, nearby.y, 36, 18, 0, 0, Math.PI*2);
+      ctx.stroke();
+      // label
+      ctx.fillStyle = 'rgba(11,16,24,0.9)';
+      ctx.fillRect(nearby.x+12, nearby.y-36, ctx.measureText(nearby.label).width+12, 24);
+      ctx.fillStyle = '#fff';
+      ctx.fillText(nearby.label, nearby.x+18, nearby.y-20);
     }
 
-    function renderTeam(){
-      const list = document.getElementById('partyList');
-      list.innerHTML = '';
-      team.forEach((p, idx) => {
-        const el = document.createElement('div');
-        el.className = 'player';
-        el.innerHTML = `<div class="avatar">${idx+1}</div><div style="flex:1"><div style="font-weight:700">${p.name || p.name}</div><div class="muted">位置：${idx===0? '中路' : '不固定'}</div></div><div class="muted">${p.ready? '準備' : '未準備'}</div>`;
-        list.appendChild(el);
-      });
-      teamCountEl.textContent = team.length;
+    // mini clock overlay on bottom-left (for immersion)
+    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+    ctx.fillRect(12, canvas.clientHeight - 46, 150, 34);
+    ctx.fillStyle = '#fff';
+    ctx.font = '14px system-ui';
+    ctx.fillText('時間：' + clockEl.textContent, 22, canvas.clientHeight - 24);
+    ctx.font = '12px system-ui';
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillText('體力：' + Math.round(player.energy*100) + '%  平衡：' + Math.round(player.balance*100) + '%', 22, canvas.clientHeight - 10);
+  }
+
+  function drawBackground(){
+    // simple layout: left house area, central park, right street
+    // sky (top gradient)
+    const g = ctx.createLinearGradient(0,0,0, MAP_H);
+    g.addColorStop(0,'#dfeffb'); g.addColorStop(1,'#f7fbff');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,MAP_W,MAP_H);
+
+    // lawn
+    ctx.fillStyle = '#e8f0e7';
+    ctx.fillRect(0,140, MAP_W, MAP_H-140);
+
+    // walking path
+    ctx.fillStyle = '#f2e9dd';
+    ctx.fillRect(380,320, 420, 40);
+
+    // draw simple house on left
+    ctx.fillStyle = '#d8c1ab';
+    ctx.fillRect(40,420, 240, 180);
+    // roof
+    ctx.beginPath();
+    ctx.moveTo(20,420); ctx.lineTo(160,320); ctx.lineTo(300,420); ctx.closePath();
+    ctx.fillStyle = '#b77b3b';
+    ctx.fill();
+
+    // small bench area (near bench object)
+    ctx.fillStyle = '#d0e4f0';
+    ctx.fillRect(320,380,40,40);
+
+    // books shelf area (right-top)
+    ctx.fillStyle = '#f6f1e8';
+    ctx.fillRect(720,120,200,120);
+
+    // bus stop (right-bottom)
+    ctx.fillStyle = '#fff0f0';
+    ctx.fillRect(980,500,140,80);
+
+    // subtle grid lines for orientation (not necessary but pretty)
+    ctx.strokeStyle = 'rgba(0,0,0,0.02)';
+    ctx.lineWidth = 1;
+    for(let x=0;x<MAP_W;x+=120){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,MAP_H); ctx.stroke(); }
+  }
+
+  function drawObject(o){
+    ctx.save();
+    if(o.type === 'bench'){
+      // bench icon
+      ctx.fillStyle = '#6b8b78';
+      ctx.fillRect(o.x-28, o.y-6, 56, 12);
+      ctx.fillStyle = '#3b4750';
+      ctx.fillRect(o.x-28, o.y-12, 8, 8);
+      ctx.fillRect(o.x+20, o.y-12, 8, 8);
+    } else if(o.type === 'cabinet'){
+      ctx.fillStyle = '#d4c0a1';
+      ctx.fillRect(o.x-18, o.y-26, 36, 40);
+      ctx.fillStyle = '#a07d53';
+      ctx.fillRect(o.x-10, o.y-10, 20, 6);
+    } else if(o.type === 'bookshelf'){
+      ctx.fillStyle = '#cbb38a';
+      ctx.fillRect(o.x-36, o.y-46, 72, 92);
+      // lines
+      ctx.strokeStyle = '#b99f78'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(o.x-28, o.y-26); ctx.lineTo(o.x+28, o.y-26); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(o.x-28, o.y+6); ctx.lineTo(o.x+28, o.y+6); ctx.stroke();
+    } else if(o.type === 'door'){
+      ctx.fillStyle = '#cdb39a';
+      ctx.fillRect(o.x-30, o.y-62, 60, 92);
+      ctx.fillStyle = '#8b5b2b';
+      ctx.fillRect(o.x+12, o.y-10, 6, 6);
+    } else if(o.type === 'bus'){
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(o.x-40, o.y-22, 96, 56);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(o.x-28, o.y-10, 60, 30);
+    } else if(o.type === 'path'){
+      // a decorative rock or path marker
+      ctx.fillStyle = '#b8c7b6';
+      ctx.fillRect(o.x-6, o.y-6, 12, 12);
+    } else {
+      ctx.fillStyle = '#aaa'; ctx.fillRect(o.x-6,o.y-6,12,12);
     }
+    // label (small)
+    ctx.fillStyle = '#334155';
+    ctx.font = '12px system-ui';
+    ctx.fillText(o.label, o.x + 12, o.y + 4);
+    ctx.restore();
+  }
 
-    // initial render
-    renderHeroes(HEROES);
-    renderSelected();
-    renderTeam();
+  // main loop
+  function loop(now){
+    const dt = Math.min(0.05, (now - lastTime) / 1000);
+    lastTime = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
 
-    // search
-    searchInput.addEventListener('input', () => {
-      const q = searchInput.value.trim().toLowerCase();
-      const filtered = HEROES.filter(h => h.name.toLowerCase().includes(q) || h.role.toLowerCase().includes(q) || h.tag.join(' ').toLowerCase().includes(q));
-      renderHeroes(filtered);
-    });
+  // handle canvas clicks for interaction (tap near object)
+  canvas.addEventListener('click', (e)=>{
+    // map click pos to canvas coord
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left);
+    const y = (e.clientY - rect.top);
+    // if clicking on object, move player there & interact
+    const nearest = objects.reduce((acc,o)=>{
+      const d = Math.hypot(o.x - x, o.y - y);
+      if(d < (acc?.d ?? 1e9)) return {o,d}; return acc;
+    }, null);
+    if(nearest && nearest.d < 60){
+      player.x = nearest.o.x + (Math.random()*10 - 5);
+      player.y = nearest.o.y + (Math.random()*8 - 4);
+      performInteraction(nearest.o);
+    } else {
+      // move target (for demo we set player pos)
+      player.x = x; player.y = y;
+    }
+  });
 
-    // small UI buttons
-    document.getElementById('btnReady').addEventListener('click', () => {
-      alert('你已經準備好了！ (範例按鈕)');
-    });
-    document.getElementById('btnInvite').addEventListener('click', () => {
-      prompt('輸入好友名稱來邀請（範例）');
-    });
+  // global listener for interact key
+  window.addEventListener('keydown', (e)=>{
+    if(e.key === 'e' || e.key === 'E'){
+      tryInteract();
+    }
+  });
 
-  </script>
+  // quick save/restore (localStorage) — optional
+  const SAVE_KEY = 'elder_sim_demo_v1';
+  function saveGame(){
+    const s = {player, timeState, tasks};
+    localStorage.setItem(SAVE_KEY, JSON.stringify(s));
+    showToast('遊戲已儲存');
+  }
+  function loadGame(){
+    try{
+      const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+      if(s){
+        Object.assign(player, s.player);
+        Object.assign(timeState, s.timeState);
+        tasks = s.tasks;
+        renderTasks();
+        showToast('載入成功');
+      }
+    }catch(e){}
+  }
+  // auto-save every 20s
+  setInterval(saveGame, 20000);
+  // load on start
+  loadGame();
+
+  // expose interact button (E) pressed via UI
+  // also render tasks periodically
+  setInterval(()=> renderTasks(), 1000);
+
+  // initial quick tip
+  showToast('歡迎！使用 WASD 或螢幕左下滑動來移動，按 E 互動。');
+})();
+</script>
 </body>
 </html>
