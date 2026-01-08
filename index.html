@@ -1,81 +1,136 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>真心話大冒險 產生器</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>真心話 or 大冒險</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#0b1020;--card:#121a33;--ink:#e8ecff;--muted:#9aa4ff;
-      --accent:#6c7cff;--accent2:#35d0ba;--danger:#ff6b6b;
-      --radius:16px;--shadow:0 20px 60px rgba(0,0,0,.35);
-      font-family: system-ui, -apple-system, "Noto Sans TC", "Segoe UI", Arial;
+      --pink:#FFB7C5; --mint:#B9F3E4; --lav:#E7D9FF; --lemon:#FFF0B3; --sky:#CFE8FF;
+      --ink:#5B5B7A; --card:#ffffffcc; --shadow:0 20px 40px rgba(0,0,0,.12);
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 10% -10%,#1a2250,transparent),radial-gradient(1200px 600px at 90% 110%,#133b3a,transparent),var(--bg);color:var(--ink)}
-    .wrap{min-height:100%;display:grid;place-items:center;padding:24px}
-    .app{width:100%;max-width:900px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)),var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
-    header{display:flex;gap:14px;align-items:center;justify-content:space-between}
-    .title h1{margin:0;font-size:22px}
-    .title p{margin:6px 0 0;color:#c7ccff;font-size:14px}
-    .controls{display:flex;gap:10px;flex-wrap:wrap}
-    button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;color:#0b1020;cursor:pointer}
-    .truth{background:linear-gradient(135deg,#6c7cff,#9aa4ff)}
-    .dare{background:linear-gradient(135deg,#35d0ba,#6fffe1)}
-    .shuffle{background:#1f2755;color:var(--ink)}
-    main{margin-top:18px;display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
-    @media (max-width:820px){main{grid-template-columns:1fr}}
-    .card{background:#0f1630;border-radius:14px;padding:18px;border:1px solid rgba(255,255,255,.06)}
-    .question{font-size:20px;line-height:1.5}
-    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-bottom:10px}
-    .b-truth{background:rgba(108,124,255,.2);color:#bfc6ff}
-    .b-dare{background:rgba(53,208,186,.2);color:#baf7ea}
-    .meta{margin-top:10px;color:#9fb0ff;font-size:13px}
-    .list{max-height:360px;overflow:auto}
-    .list h3{margin:0 0 10px}
-    .list ul{margin:0;padding-left:18px}
-    footer{margin-top:14px;display:flex;justify-content:space-between;gap:10px;color:#9fb0ff;font-size:12px}
+    body{
+      margin:0; font-family:Poppins, system-ui, -apple-system;
+      color:var(--ink);
+      background: linear-gradient(135deg,var(--pink),var(--mint),var(--lav));
+      min-height:100vh; display:grid; place-items:center;
+    }
+    .app{
+      width:min(980px,92vw); padding:24px;
+    }
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;
+    }
+    .title{
+      font-weight:700; font-size:clamp(20px,3vw,28px);
+    }
+    .badge{background:var(--lemon); padding:6px 12px; border-radius:999px; font-weight:600}
+
+    .stage{
+      background:var(--card); border-radius:28px; box-shadow:var(--shadow);
+      padding:28px; display:grid; gap:24px;
+    }
+
+    .cards{
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px;
+    }
+    .card{
+      background:linear-gradient(135deg,var(--sky),#fff);
+      border-radius:22px; padding:24px; text-align:center; cursor:pointer;
+      box-shadow:0 12px 24px rgba(0,0,0,.1);
+      transform:translateY(0); transition:.25s ease;
+      position:relative; overflow:hidden;
+    }
+    .card:hover{transform:translateY(-6px)}
+    .card h3{margin:8px 0 4px; font-size:20px}
+    .card p{opacity:.75}
+    .pill{
+      display:inline-block; padding:8px 14px; border-radius:999px; font-weight:700;
+      background:#fff; box-shadow:0 6px 14px rgba(0,0,0,.12)
+    }
+
+    .center{
+      display:grid; place-items:center; gap:14px; min-height:180px;
+    }
+
+    .wheel{
+      width:220px; height:220px; border-radius:50%;
+      background: conic-gradient(var(--pink) 0 180deg, var(--mint) 180deg 360deg);
+      display:grid; place-items:center; position:relative; box-shadow:var(--shadow);
+      transition:transform 1.4s cubic-bezier(.2,.8,.2,1);
+    }
+    .wheel::after{
+      content:""; position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+      width:0; height:0; border-left:10px solid transparent; border-right:10px solid transparent; border-bottom:16px solid #fff;
+      filter:drop-shadow(0 4px 4px rgba(0,0,0,.15));
+    }
+    .wheel span{
+      background:#fff; padding:10px 16px; border-radius:999px; font-weight:700;
+    }
+
+    .btn{
+      appearance:none; border:none; cursor:pointer;
+      padding:14px 20px; border-radius:16px; font-weight:700; font-size:16px;
+      background:linear-gradient(135deg,var(--lav),var(--lemon)); color:var(--ink);
+      box-shadow:0 10px 22px rgba(0,0,0,.12);
+    }
+    .btn.secondary{background:#fff}
+
+    .question{
+      background:#fff; border-radius:22px; padding:22px; box-shadow:var(--shadow);
+      font-size:18px; line-height:1.6;
+    }
+
+    .fade{animation:fade .35s ease}
+    @keyframes fade{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+
+    footer{opacity:.7; text-align:center; margin-top:10px}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="app">
-      <header>
-        <div class="title">
-          <h1>真心話大冒險</h1>
-          <p>精美介面・隨機生成・安全刁鑽（共 100 題）</p>
-        </div>
-        <div class="controls">
-          <button class="truth" id="btnTruth">真心話</button>
-          <button class="dare" id="btnDare">大冒險</button>
-          <button class="shuffle" id="btnShuffle">洗牌</button>
-        </div>
-      </header>
+  <div class="app">
+    <header>
+      <div class="title">🎲 真心話 or 大冒險</div>
+      <div class="badge">馬卡龍配色</div>
+    </header>
 
-      <main>
-        <section class="card">
-          <span id="badge" class="badge b-truth">等待抽題</span>
-          <div id="question" class="question">點選上方按鈕開始。</div>
-          <div class="meta" id="meta"></div>
-        </section>
-        <aside class="card list">
-          <h3>題庫預覽</h3>
-          <p class="meta">真心話 50 題｜大冒險 50 題</p>
-          <ul id="preview"></ul>
-        </aside>
-      </main>
+    <section class="stage" id="stage">
+      <!-- STEP 1: 抽類型 -->
+      <div class="center" id="stepType">
+        <div class="wheel" id="wheel"><span>抽 類 型</span></div>
+        <button class="btn" id="spinType">開始抽「真心話 / 大冒險」</button>
+      </div>
 
-      <footer>
-        <div>提示：題目皆為 PG-13，不含露骨或成人內容。</div>
-        <div>本頁不會上傳任何資料</div>
-      </footer>
-    </div>
+      <!-- STEP 2: 抽問題 -->
+      <div class="center" id="stepQuestion" style="display:none">
+        <div class="cards">
+          <div class="card" id="drawQ">
+            <div class="pill" id="pickedType">—</div>
+            <h3>抽 問 題</h3>
+            <p>點擊抽一題</p>
+          </div>
+          <div class="card">
+            <h3>目前題目</h3>
+            <p>準備好了嗎？</p>
+          </div>
+        </div>
+        <div class="question fade" id="questionBox" style="display:none"></div>
+        <div style="display:flex; gap:10px">
+          <button class="btn secondary" id="againType">重抽類型</button>
+          <button class="btn" id="againQ">再抽一題</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>✨ 先抽類型 → 再抽問題</footer>
   </div>
 
-<script>
-// ===== 題庫（共 100 題，刁鑽但 PG-13） =====
-const truths = [
-  "你現在有喜歡的人嗎？",
+  <script>
+    // 題庫（示例：請替換為你完整的 50 題不露骨版本）
+    const truthQuestions = [
+ "你現在有喜歡的人嗎？",
   "你最近一次心動是什麼時候？",
   "你有沒有暗戀過在場的人？",
   "你最不敢讓喜歡的人知道的一件事是什麼？",
@@ -124,10 +179,10 @@ const truths = [
   "你最想被誰理解？",
   "你覺得自己是容易動心的人嗎？",
   "你現在最想聽到的一句話是什麼？"
-];
+    ];
 
-const dares = [
- "打電話給你的 crush 表達好感（不能說是遊戲）。",
+    const dareQuestions = [
+  "打電話給你的 crush 表達好感（不能說是遊戲）。",
   "對在場隨機一人說一句真心稱讚。",
   "把你手機最後一則傳給 crush 的訊息大聲念出來。",
   "傳一條「其實我一直很欣賞你」給你現在最想靠近的人。",
@@ -177,32 +232,50 @@ const dares = [
   "拍一張現在的自己，留作紀念。",
   "對在場最不熟的人主動聊天 1 分鐘。",
   "讓全場投票選一人，你要幫他／她拿東西一輪。"
-];
+    ];
 
-// ===== 工具 =====
-function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
-function renderPreview(){
-  const ul = document.getElementById('preview'); ul.innerHTML='';
-  truths.slice(0,8).forEach(q=>{const li=document.createElement('li');li.textContent='真心話：'+q;ul.appendChild(li)});
-  dares.slice(0,8).forEach(q=>{const li=document.createElement('li');li.textContent='大冒險：'+q;ul.appendChild(li)});
-}
-renderPreview();
+    const wheel = document.getElementById('wheel');
+    const spinType = document.getElementById('spinType');
+    const stepType = document.getElementById('stepType');
+    const stepQuestion = document.getElementById('stepQuestion');
+    const pickedType = document.getElementById('pickedType');
+    const drawQ = document.getElementById('drawQ');
+    const questionBox = document.getElementById('questionBox');
+    const againType = document.getElementById('againType');
+    const againQ = document.getElementById('againQ');
 
-function show(type){
-  const q = type==='truth'? rand(truths):rand(dares);
-  const badge=document.getElementById('badge');
-  const question=document.getElementById('question');
-  const meta=document.getElementById('meta');
-  badge.textContent = type==='truth'?'真心話':'大冒險';
-  badge.className = 'badge ' + (type==='truth'?'b-truth':'b-dare');
-  question.textContent = q;
-  meta.textContent = `剩餘題庫：真心話 ${truths.length}｜大冒險 ${dares.length}`;
-}
+    let currentType = null;
 
-// ===== 事件 =====
-document.getElementById('btnTruth').onclick=()=>show('truth');
-document.getElementById('btnDare').onclick=()=>show('dare');
-document.getElementById('btnShuffle').onclick=()=>renderPreview();
-</script>
+    function rand(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+
+    spinType.onclick = () => {
+      const deg = 720 + Math.random()*720;
+      wheel.style.transform = `rotate(${deg}deg)`;
+      setTimeout(()=>{
+        currentType = Math.random() < .5 ? '真心話' : '大冒險';
+        pickedType.textContent = currentType;
+        stepType.style.display = 'none';
+        stepQuestion.style.display = 'grid';
+      }, 1400);
+    };
+
+    drawQ.onclick = () => {
+      const q = currentType === '真心話' ? rand(truthQuestions) : rand(dareQuestions);
+      questionBox.style.display = 'block';
+      questionBox.textContent = q;
+      questionBox.classList.remove('fade');
+      void questionBox.offsetWidth; // restart animation
+      questionBox.classList.add('fade');
+    };
+
+    againType.onclick = () => {
+      stepQuestion.style.display = 'none';
+      stepType.style.display = 'grid';
+      wheel.style.transform = 'rotate(0deg)';
+      questionBox.style.display = 'none';
+    };
+
+    againQ.onclick = drawQ.onclick;
+  </script>
 </body>
 </html>
