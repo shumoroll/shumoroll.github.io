@@ -3,216 +3,206 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>名字 → 預測另一半年紀</title>
+  <title>真心話大冒險 產生器</title>
   <style>
-    /* 簡潔美觀的樣式 */
     :root{
-      --bg:#f6f8fb;
-      --card:#ffffff;
-      --accent:#556bff;
-      --muted:#6b7280;
-      --shadow: 0 8px 24px rgba(34,41,84,0.06);
-      font-family: system-ui, "Noto Sans TC", "Helvetica Neue", Arial;
+      --bg:#0b1020;--card:#121a33;--ink:#e8ecff;--muted:#9aa4ff;
+      --accent:#6c7cff;--accent2:#35d0ba;--danger:#ff6b6b;
+      --radius:16px;--shadow:0 20px 60px rgba(0,0,0,.35);
+      font-family: system-ui, -apple-system, "Noto Sans TC", "Segoe UI", Arial;
     }
-    html,body{height:100%; margin:0; background:linear-gradient(180deg,var(--bg),#eef2ff);}
-    .wrap{
-      min-height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:40px 16px;
-      box-sizing:border-box;
-    }
-    .card{
-      background:var(--card);
-      padding:28px;
-      border-radius:14px;
-      width:100%;
-      max-width:560px;
-      box-shadow:var(--shadow);
-    }
-    h1{margin:0 0 8px; font-size:20px;}
-    p.lead{margin:0 0 18px; color:var(--muted); font-size:14px;}
-    .row{display:flex; gap:10px; margin-bottom:12px;}
-    input[type="text"]{
-      flex:1;
-      padding:12px 14px;
-      border-radius:10px;
-      border:1px solid #e6e9f2;
-      font-size:15px;
-      outline:none;
-    }
-    button{
-      padding:12px 16px;
-      border-radius:10px;
-      border:0;
-      background:var(--accent);
-      color:white;
-      font-weight:600;
-      cursor:pointer;
-      font-size:15px;
-    }
-    .result{
-      margin-top:18px;
-      padding:14px;
-      border-radius:10px;
-      background:linear-gradient(180deg,#fbfdff,#f6f9ff);
-      border:1px solid #eef2ff;
-      font-size:16px;
-    }
-    .meta{margin-top:12px; color:var(--muted); font-size:13px;}
-    footer{margin-top:14px; font-size:13px; color:var(--muted);}
-    .small{font-size:13px; color:#9aa0b4;}
-    .controls{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
-    label{font-size:13px; color:var(--muted);}
-    input[type="range"]{width:160px;}
-    .hint{margin-top:8px;color:#8b92a8;font-size:13px;}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 10% -10%,#1a2250,transparent),radial-gradient(1200px 600px at 90% 110%,#133b3a,transparent),var(--bg);color:var(--ink)}
+    .wrap{min-height:100%;display:grid;place-items:center;padding:24px}
+    .app{width:100%;max-width:900px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)),var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    header{display:flex;gap:14px;align-items:center;justify-content:space-between}
+    .title h1{margin:0;font-size:22px}
+    .title p{margin:6px 0 0;color:#c7ccff;font-size:14px}
+    .controls{display:flex;gap:10px;flex-wrap:wrap}
+    button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;color:#0b1020;cursor:pointer}
+    .truth{background:linear-gradient(135deg,#6c7cff,#9aa4ff)}
+    .dare{background:linear-gradient(135deg,#35d0ba,#6fffe1)}
+    .shuffle{background:#1f2755;color:var(--ink)}
+    main{margin-top:18px;display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    @media (max-width:820px){main{grid-template-columns:1fr}}
+    .card{background:#0f1630;border-radius:14px;padding:18px;border:1px solid rgba(255,255,255,.06)}
+    .question{font-size:20px;line-height:1.5}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-bottom:10px}
+    .b-truth{background:rgba(108,124,255,.2);color:#bfc6ff}
+    .b-dare{background:rgba(53,208,186,.2);color:#baf7ea}
+    .meta{margin-top:10px;color:#9fb0ff;font-size:13px}
+    .list{max-height:360px;overflow:auto}
+    .list h3{margin:0 0 10px}
+    .list ul{margin:0;padding-left:18px}
+    footer{margin-top:14px;display:flex;justify-content:space-between;gap:10px;color:#9fb0ff;font-size:12px}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card" role="main">
-      <h1>名字 → 預測另一半年紀</h1>
-      <p class="lead">輸入名字（或暱稱），按下預測會得到一個穩定的年齡結果。可調整年齡上下限。</p>
+    <div class="app">
+      <header>
+        <div class="title">
+          <h1>真心話大冒險</h1>
+          <p>精美介面・隨機生成・安全刁鑽（共 100 題）</p>
+        </div>
+        <div class="controls">
+          <button class="truth" id="btnTruth">真心話</button>
+          <button class="dare" id="btnDare">大冒險</button>
+          <button class="shuffle" id="btnShuffle">洗牌</button>
+        </div>
+      </header>
 
-      <div class="row">
-        <input id="nameInput" type="text" placeholder="輸入名字，例如：小明 / Lily / 張三" autocomplete="off" />
-        <button id="predictBtn">預測</button>
-      </div>
-
-      <div class="controls">
-        <label for="minRange">最小年齡</label>
-        <input id="minRange" type="range" min="12" max="30" value="18" />
-        <span id="minVal" class="small">18</span>
-        <div style="flex:1"></div>
-        <label for="maxRange">最大年齡</label>
-        <input id="maxRange" type="range" min="30" max="90" value="65" />
-        <span id="maxVal" class="small">65</span>
-      </div>
-
-      <div class="hint">提示：拖動滑桿可以改變年齡範圍（預設為 18–65）。</div>
-
-      <div id="result" class="result" aria-live="polite" style="display:none"></div>
-
-      <div class="meta">
-        <div>演算法：把名字轉成數字雜湊（可重複），再映射到你設定的年齡範圍內。</div>
-        <div class="small">若想產生更浪漫或幽默的描述，我也可以幫你加上「個性」「約會建議」等額外文字！</div>
-      </div>
+      <main>
+        <section class="card">
+          <span id="badge" class="badge b-truth">等待抽題</span>
+          <div id="question" class="question">點選上方按鈕開始。</div>
+          <div class="meta" id="meta"></div>
+        </section>
+        <aside class="card list">
+          <h3>題庫預覽</h3>
+          <p class="meta">真心話 50 題｜大冒險 50 題</p>
+          <ul id="preview"></ul>
+        </aside>
+      </main>
 
       <footer>
-        <div class="small">版本 1 — 完全在瀏覽器執行，不會上傳任何資料。</div>
+        <div>提示：題目皆為 PG-13，不含露骨或成人內容。</div>
+        <div>本頁不會上傳任何資料</div>
       </footer>
     </div>
   </div>
 
-  <script>
-    // ----- 設定 -----
-    const nameInput = document.getElementById('nameInput');
-    const predictBtn = document.getElementById('predictBtn');
-    const resultEl = document.getElementById('result');
-    const minRange = document.getElementById('minRange');
-    const maxRange = document.getElementById('maxRange');
-    const minVal = document.getElementById('minVal');
-    const maxVal = document.getElementById('maxVal');
+<script>
+// ===== 題庫（共 100 題，刁鑽但 PG-13） =====
+const truths = [
+  "你現在有喜歡的人嗎？",
+  "你最近一次心動是什麼時候？",
+  "你有沒有暗戀過在場的人？",
+  "你最不敢讓喜歡的人知道的一件事是什麼？",
+  "你會主動追人，還是等對方靠近？",
+  "你最容易對哪種類型的人心動？",
+  "你曾經因為喜歡而吃醋過嗎？",
+  "你有沒有後悔錯過某個人？",
+  "你覺得曖昧甜，還是在一起甜？",
+  "你有沒有對朋友產生過超出友情的感覺？",
+  "你最怕被喜歡的人怎麼看你？",
+  "你會為了喜歡的人改變自己嗎？",
+  "你最想跟喜歡的人一起做的小事是什麼？",
+  "你有沒有因為怕被拒絕而不敢告白？",
+  "你最在意另一半的哪個小細節？",
+  "你會把喜歡藏得很深嗎？",
+  "你最難忘的一次心動經驗是什麼？",
+  "你會因為誰的一句話而開心一整天？",
+  "你現在心裡有沒有一個特別的名字？",
+  "你最希望被怎樣關心？",
+  "你會為了誰熬夜聊天？",
+  "你最怕在感情裡失去的是什麼？",
+  "你覺得遠距離能維持嗎？",
+  "你有沒有偷偷期待過某個人的訊息？",
+  "你最想對喜歡的人說卻沒說出口的是什麼？",
+  "你最容易對誰心軟？",
+  "你會因為誰而感到緊張？",
+  "你有沒有把誰設成特別通知？",
+  "你最嚮往的相處模式是什麼？",
+  "你覺得喜歡需要理由嗎？",
+  "你有沒有因為某個人而變得更努力？",
+  "你最想收到什麼樣的告白？",
+  "你會為了感情冒險一次嗎？",
+  "你最怕告白失敗的原因是什麼？",
+  "你最在意對方回訊速度嗎？",
+  "你會因為喜歡而改變未來計畫嗎？",
+  "你最想跟誰一起看夜景？",
+  "你最心動的一句話是什麼？",
+  "你會為了誰放慢腳步？",
+  "你現在對感情最困惑的是什麼？",
+  "你最怕在感情裡受傷嗎？",
+  "你覺得喜歡比較像安心還是悸動？",
+  "你最想和喜歡的人分享的興趣是什麼？",
+  "你會為了喜歡的人學新技能嗎？",
+  "你最期待的一次約會是什麼？",
+  "你有沒有因為某個人而失眠？",
+  "你最想被誰理解？",
+  "你覺得自己是容易動心的人嗎？",
+  "你現在最想聽到的一句話是什麼？"
+];
 
-    // 更新顯示的滑桿數值
-    function updateRangeDisplays(){
-      minVal.textContent = minRange.value;
-      maxVal.textContent = maxRange.value;
-      // 確保 min <= max
-      if (parseInt(minRange.value) >= parseInt(maxRange.value)) {
-        // 若衝突，自動維持最小差距 1
-        maxRange.value = Math.min(parseInt(minRange.value) + 1, maxRange.max);
-        maxVal.textContent = maxRange.value;
-      }
-    }
-    minRange.addEventListener('input', updateRangeDisplays);
-    maxRange.addEventListener('input', updateRangeDisplays);
-    updateRangeDisplays();
+const dares = [
+ "打電話給你的 crush 表達好感（不能說是遊戲）。",
+  "對在場隨機一人說一句真心稱讚。",
+  "把你手機最後一則傳給 crush 的訊息大聲念出來。",
+  "傳一條「其實我一直很欣賞你」給你現在最想靠近的人。",
+  "把外套或帽子借給在場一人，接下來三輪不能拿回。",
+  "讓在場一人任意選一首歌，你要跟著唱副歌。",
+  "抱在場你最有安全感的人 30 秒。",
+  "打電話給一位老朋友，說你最近想到他／她。",
+  "用手比愛心對在場隨機一人。",
+  "發一則限時動態說「今天心情有點特別」。",
+  "跟在場同性別的人擊掌並對看 10 秒。",
+  "唸出你跟 crush 的聊天紀錄中最近一段對話。",
+  "把褲腳或袖子捲起來，維持到下三輪結束。",
+  "讓隨機一人在你臉上畫一個小圖案（可愛系）。",
+  "對在場你最想靠近的人說一句曖昧但不告白的話。",
+  "傳一張風景或桌面照給隨機一位聯絡人。",
+  "模仿求婚姿勢，向在場一人說他／她的優點。",
+  "坐在指定位置，接下來五輪不能換位。",
+  "大聲說出你最近最在意的一個人（可不說名字）。",
+  "打電話給家人說你今天過得很好。",
+  "用溫柔語氣念一段抒情文字或歌詞（不需完整）。",
+  "讓隨機一人輕拍你肩膀 10 下。",
+  "跟在場一人對看 20 秒不笑。",
+  "發限時動態 tag 一位朋友說「謝謝你」。",
+  "跟著音樂跳 15 秒自由舞。",
+  "讓大家聞你的洗衣精或香水味道。",
+  "對著在場一人做 10 個深蹲。",
+  "把一張你覺得好笑的照片設成大頭貼 24 小時。",
+  "對隨機一人說一句悄悄話。",
+  "說出你最近一次熬夜的原因。",
+  "讓隨機一人餵你吃零食（用手）。",
+  "傳「最近有點想聊天」給一位朋友。",
+  "用手比出你現在的心情（不能說話）。",
+  "對著鏡子說 5 遍「我其實很不錯」。",
+  "讓大家在你手臂上寫一個字（可洗）。",
+  "打電話給朋友說你現在在玩真心話大冒險。",
+  "把衣服反穿直到遊戲結束。",
+  "對隨機一人真心告白一個優點。",
+  "把一樣隨身物品借給隨機一人。",
+  "模仿電影角色講一句經典台詞。",
+  "讓隨機一人拍你一張正常照片。",
+  "大聲念出你手機裡最溫暖的一則訊息。",
+  "跟在場一人十指緊扣 10 秒。",
+  "傳「今天想到你」給隨機聯絡人。",
+  "讓大家選一個表情，你要模仿 10 秒。",
+  "靠近隨機一人坐 30 秒。",
+  "發一則語音給 crush 說「希望你今天過得不錯」。",
+  "拍一張現在的自己，留作紀念。",
+  "對在場最不熟的人主動聊天 1 分鐘。",
+  "讓全場投票選一人，你要幫他／她拿東西一輪。"
+];
 
-    // ----- 核心：把名字 deterministic 轉成年齡 -----
-    // 演算法說明（簡短）：
-    // 1. 以名字每個字元的 charCode 計算一個整數雜湊值（考慮字符位置加權）。
-    // 2. 將雜湊值轉為非負，取模以映射到目標年齡範圍（min..max）。
-    function hashNameToNumber(name) {
-      // 簡單且穩定的雜湊：基於 DJB2 的變體
-      // 保留 unicode 字元處理（適用中文和英文）
-      let h = 5381;
-      for (let i = 0; i < name.length; i++) {
-        // 使用 charCodeAt 處理單一 UTF-16 code unit（對絕大多數名字足夠）
-        h = ((h << 5) + h) ^ name.charCodeAt(i); // h * 33 ^ c
-        // 限制在 32-bit 範圍，避免溢位問題
-        h = h | 0;
-      }
-      return Math.abs(h);
-    }
+// ===== 工具 =====
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function renderPreview(){
+  const ul = document.getElementById('preview'); ul.innerHTML='';
+  truths.slice(0,8).forEach(q=>{const li=document.createElement('li');li.textContent='真心話：'+q;ul.appendChild(li)});
+  dares.slice(0,8).forEach(q=>{const li=document.createElement('li');li.textContent='大冒險：'+q;ul.appendChild(li)});
+}
+renderPreview();
 
-    function predictAgeFromName(name, minAge = 18, maxAge = 65) {
-      name = (name || '').trim();
-      if (!name) return null;
-      const num = hashNameToNumber(name);
-      const range = Math.max(1, parseInt(maxAge) - parseInt(minAge) + 1);
-      const age = (num % range) + parseInt(minAge);
-      return age;
-    }
+function show(type){
+  const q = type==='truth'? rand(truths):rand(dares);
+  const badge=document.getElementById('badge');
+  const question=document.getElementById('question');
+  const meta=document.getElementById('meta');
+  badge.textContent = type==='truth'?'真心話':'大冒險';
+  badge.className = 'badge ' + (type==='truth'?'b-truth':'b-dare');
+  question.textContent = q;
+  meta.textContent = `剩餘題庫：真心話 ${truths.length}｜大冒險 ${dares.length}`;
+}
 
-    // ----- UI 行為 -----
-    function showResult(text, extraClass='') {
-      resultEl.style.display = 'block';
-      resultEl.innerHTML = text;
-      if (extraClass) {
-        resultEl.className = 'result ' + extraClass;
-      } else {
-        resultEl.className = 'result';
-      }
-    }
-
-    predictBtn.addEventListener('click', () => {
-      const name = nameInput.value;
-      const min = parseInt(minRange.value);
-      const max = parseInt(maxRange.value);
-      if (!name.trim()) {
-        showResult('請先輸入名字喔！', 'warn');
-        nameInput.focus();
-        return;
-      }
-      const age = predictAgeFromName(name, min, max);
-      // 可以用一些額外文字讓結果更有趣
-      const adjectives = [
-        '溫柔又可靠',
-        '有點神祕但超吸引人',
-        '幽默風趣、笑點很高',
-        '成熟穩重，像個大樹',
-        '活潑外向，愛玩愛笑',
-        '細心體貼，適合一起生活'
-      ];
-      const pick = adjectives[ Math.abs(hashNameToNumber(name + 'adj')) % adjectives.length ];
-      const html = `
-        <strong>預測年齡：</strong> ${age} 歲<br/>
-        <span class="small">（名字：<em>${escapeHtml(name)}</em>；範圍：${min}–${max}）</span>
-        <div style="margin-top:8px;">小提醒：我們覺得對方個性可能是 — <strong>${pick}</strong></div>
-      `;
-      showResult(html);
-    });
-
-    // 按下 Enter 也會預測
-    nameInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        predictBtn.click();
-      }
-    });
-
-    // 簡單的 escape 防 XSS（雖然這是本地頁面）
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    }
-
-    // 預設範例（可刪）
-    nameInput.value = '';
-  </script>
+// ===== 事件 =====
+document.getElementById('btnTruth').onclick=()=>show('truth');
+document.getElementById('btnDare').onclick=()=>show('dare');
+document.getElementById('btnShuffle').onclick=()=>renderPreview();
+</script>
 </body>
 </html>
